@@ -4,8 +4,8 @@
 
 newPackage(
 	"CharClassCalc",
-	Version => "2.1", 
-    	Date => "Dec. 8, 2014",
+	Version => "2.2", 
+    	Date => "Mar 20, 2015",
     	Authors => {{Name => "Martin Helmer", 
 		  Email => "mhelmer2@uwo.ca", 
 		  HomePage => "http://publish.uwo.ca/~mhelmer2/"}},
@@ -141,6 +141,9 @@ CSM = method(TypicalValue => RingElement,  Options => {Alg=>InEx, Method=>Vspace
 
 CSM Ideal :=  opts ->  I -> (
     <<"Start csm, Alg= "<<opts.Alg<<", Method= "<<opts.Method<<endl;
+    if not isPolynomialRing ring I then error "the ideal needs to be defined over a polynomial ring.";
+    if not isHomogeneous I then error "the ideal has to be homogeneous.";
+    if not isField coefficientRing ring I then error "the coefficient ring needs to be a field.";
     S:=ring I;
     m:=numgens I;
     kk:=coefficientRing S;
@@ -155,6 +158,10 @@ CSM Ideal :=  opts ->  I -> (
     h := symbol h;   
     ChowRingPn:=ZZ[h]/(h^(n+1));
     use(ChowRingPn);
+    if I==ideal 0_S then return (1+h)^(n+1);
+    if I==ideal 1_S then return 0_ChowRingPn;
+    
+    --
 
     if(opts.Alg==Composite) then (
         --<<"Starting comp. "<<endl;
@@ -241,6 +248,9 @@ CSM Ideal :=  opts ->  I -> (
 
 Segre = method(TypicalValue => RingElement,  Options => {Method=>VspaceDim} );
 Segre Ideal :=  opts ->  I -> ( 
+    if not isPolynomialRing ring I then error "the ideal needs to be defined over a polynomial ring.";
+    if not isHomogeneous I then error "the ideal has to be homogeneous.";
+    if not isField coefficientRing ring I then error "the coefficient ring needs to be a field.";
     S:=ring I;
     m:=numgens I;
     kk:=coefficientRing S;
@@ -248,6 +258,8 @@ Segre Ideal :=  opts ->  I -> (
     n:=numgens S-1; 
     h := symbol h;   
     ChowRingPn:=ZZ[h]/(h^(n+1));
+    if I==ideal 0_S then return 1_ChowRingPn;
+    if I==ideal 1_S then return 0_ChowRingPn; 
     --d:=(degree I_0)_0;
     d:=first max degrees I; 
     use(ChowRingPn);
@@ -281,7 +293,7 @@ GradMultiDegree RingElement := opts-> f -> (
 --------------------------------------------
 --check if the ideal defines a smooth scheme.
 isSmooth=I->(
-    <<"In is smooth"<<endl;
+    --<<"In is smooth"<<endl;
     S:=ring I;
     Igens:=gens(I);
     J1:=minors(numgens(I), jacobian I)+I;
@@ -472,8 +484,9 @@ projectiveDegree = {Method => VspaceDim} >> opts -> I -> (
             g#k=tall;
             ); 
         );
+    use S;
     ProjSeq:= toSequence g;
-    --<<"g= "<<ProjSeq<<endl;
+    <<"g= "<<ProjSeq<<endl;
     return ProjSeq
     )
     
@@ -491,6 +504,21 @@ csmHyper = {Method => VspaceDim} >> opts-> (n,ChowRingPn,H,hyper) -> (
     )
 
 beginDocumentation()
+
+TEST ///
+{*
+    restart
+    needsPackage "CharClassCalc"
+*}
+    n=2;
+    n=4;
+    kk=ZZ/32749;
+    R=kk[x_0..x_n];
+    I=ideal (x_0^2-x_1*x_2,x_0*x_3);
+    I=ideal(x_0*x_1);
+    time segre =Segre(I);
+    
+///
 
 TEST ///
 {*
@@ -789,3 +817,51 @@ TEST ///
     I=ideal(random(3,R));
     elapsedTime CSM I
 ///    
+TEST ///
+{*
+    --Example 3.3 Budur+ Wang
+    --Euler char very affine var.
+    restart
+    needsPackage "CharClassCalc"
+*}
+    n=4;
+    m=5;
+    kk=ZZ/32749;
+    R=kk[w,x,y,z,t_1..t_n];
+    I=ideal(t_1-w^m,x*t_2-w,t_3-w*y,t_4-w*z,w+y-1,x+z-1)
+    K=eliminate({w,x,y,z},I);
+    Kl=(entries mingens K)_0;
+    J3=ideal Kl_{0..2,4};
+    S=kk[t_0,(gens(R))_{4..7}];
+    J=substitute(J3,S);
+    Jh=ideal(mingens(homogenize(J,t_0)))
+    dim Jh;
+    csmProjClosure=CSM Jh;
+
+
+    --Calculated that:
+    --                                          4     3      2
+    --The Chern-Schwartz-Macpherson class is: 2h  + 4h  + 10h
+    --
+    S2=kk[(gens(R))_{4..7}];
+    Jh2=substitute( sub(Jh,{t_0=>0}), S2);
+    csmLimitScheme= CSM Jh2; 
+    --                                          3     2
+    --The Chern-Schwartz-Macpherson class is: 3h  + 2h
+    --So affine Euler= 2-3=-1. 
+///
+
+TEST ///
+{*
+    restart
+    needsPackage "CharClassCalc"
+*}
+    R = ZZ/32749[x,y,z];
+    CSM ideal (x,y,z)
+    CSM ideal 0_R
+    CSM ideal 1_R
+    Segre ideal 0_R
+    Segre ideal 1_R
+
+
+///
