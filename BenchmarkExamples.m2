@@ -203,7 +203,7 @@ TEST ///
 
 
 TEST ///
---Singular degree 5 surface in P^10
+--Singular degree 16 surface in P^10
 {*
     restart
     needsPackage "CharClassCalc"
@@ -211,7 +211,7 @@ TEST ///
    n=10;
    kk=ZZ/32749;
    R=kk[x_0..x_n];
-   M = matrix{{x_0^2-x_1^2,22*x_3-35*x_9-13*x_2,x_9-x_7+5*x_3},{x_8+9*x_0+4*x_1,7*x_1-33*x_5+23*x_6,random(1,R)}};
+   M = matrix{{x_0-x_1,22*x_3-35*x_9-13*x_2,x_9-x_7+5*x_3},{x_8+9*x_0+4*x_1,7*x_1-33*x_5+23*x_6,random(1,R)}};
    I=minors(2,M);
    time csm= CSM(I)
    degree I
