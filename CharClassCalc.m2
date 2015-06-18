@@ -4,8 +4,8 @@
 
 newPackage(
 	"CharClassCalc",
-	Version => "2.2", 
-    	Date => "Mar 20, 2015",
+	Version => "2.3", 
+    	Date => "June 18, 2015",
     	Authors => {{Name => "Martin Helmer", 
 		  Email => "mhelmer2@uwo.ca", 
 		  HomePage => "http://publish.uwo.ca/~mhelmer2/"}},
@@ -19,18 +19,19 @@ try loadPackage ("Bertini", Reload=>true) then (<<"Bertini Loaded"<<endl;) else 
 
 --Exported functions/variables
 export{
-   Segre,
-   CSM,
-   Euler,
-   EulerAffine,
-   GradMultiDegree,
-   Alg,
-   InEx,
-   Composite,
-   Method,
-   VspaceDim,
-   Sat,
-   Num
+   "Segre",
+   "CSM",
+   "Euler",
+   "EulerAffine",
+   "GradMultiDegree",
+   "ProjectiveDegrees",
+   "Alg",
+   "InEx",
+   "Composite",
+   "Method",
+   "VspaceDim",
+   "Sat",
+   "Num"
 
 }
 
@@ -284,6 +285,11 @@ GradMultiDegree RingElement := opts-> f -> (
     return gradMulti; 
     )
 
+ProjectiveDegrees=method(TypicalValue=> RingElement, Options=>{Method=>VspaceDim});
+ProjectiveDegrees Ideal := opts-> I -> (
+    g:=projectiveDegree(I,Method=>opts.Method);
+    return g; 
+    )
 
 ----------------------------------------------
 -- Internal functions
@@ -332,6 +338,7 @@ CSMOneSingGen ={Method => VspaceDim} >> opts ->(I, hyper,ChowRingPn,h)->(
     stuff:=sum(0..litk,p-> h^(p)*sum(0..p,i->(-1)^i*binomial(litk-i,p-i)*cE_(h^i)*(dk)^(p-i) ) );
     <<"Computing singularity subscheme"<<endl;
     time K:=saturate (minors(litk, jacobian I) + I);
+    --time K:=(minors(litk, jacobian I) + I);
     Milnor:=0;
     --<<"Dim k "<<dim(K)<<endl;
     if dim(K)<=0 then (
@@ -422,8 +429,9 @@ projectiveDegree = {Method => VspaceDim} >> opts -> I -> (
     val:=n-dimI;
     gbWt2:=0;
     tall2:=0;
+    --<<"dim A^n= "<<numgens(R3)<<endl;
     --<<"Method ="<<opts.Method<<endl;
-
+    --time(
     for k from 1 to n do (
         if k<val then (g#k=(d)^k) else (
             if opts.Method==VspaceDim then(
@@ -444,7 +452,7 @@ projectiveDegree = {Method => VspaceDim} >> opts -> I -> (
                 tall = tall2;
                 --if tall != tall1 or tall != tall2 then error "screwed up line";
                 --R9:=(R3/Wt)^1;
-            
+                --<<"max eq. degree= "<<degree(Pol_0)<<endl;
                 --tall = degree(R9);
                 --tall= length (entries gens gb Wt);
                 );
@@ -484,6 +492,7 @@ projectiveDegree = {Method => VspaceDim} >> opts -> I -> (
             g#k=tall;
             ); 
         );
+    --); time match
     use S;
     ProjSeq:= toSequence g;
     <<"g= "<<ProjSeq<<endl;
@@ -576,6 +585,7 @@ TEST ///
     h = (ring csm)_0;
     assert(csm == 148*h^4 - 28*h^3 + 16*h^2)
     seg = Segre I2
+    ProjectiveDegrees I2
     h = (ring seg)_0
     --Chern fulton class is
     CF=(1+h)^(n+1)*seg; 
