@@ -7,7 +7,7 @@ newPackage(
 	Version => "2.3", 
     	Date => "June 18, 2015",
     	Authors => {{Name => "Martin Helmer", 
-		  Email => "mhelmer2@uwo.ca", 
+		  Email => "martin.helmer2@gmail.com", 
 		  HomePage => "http://publish.uwo.ca/~mhelmer2/"}},
     	Headline => "Computes CSM classes, Segre classes and the Euler Char.",
     	DebuggingMode => true,
